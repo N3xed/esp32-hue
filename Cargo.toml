@@ -1,0 +1,42 @@
+[workspace]
+members = ["esp-idf-hal", "esp-idf-svc"]
+
+[package]
+name = "esp32-hue"
+version = "0.1.0"
+authors = ["N3xed <dominik.gschwind99@gmail.com>"]
+edition = "2021"
+resolver = "2"
+
+[profile.release]
+opt-level = "s"
+
+[profile.dev]
+debug = true # Symbols are nice and they don't increase the size on Flash
+opt-level = "z"
+
+[patch.crates-io]
+esp-idf-hal = { path = "esp-idf-hal" }
+esp-idf-svc = { path = "esp-idf-svc" }
+
+[features]
+pio = ["esp-idf-sys/pio"]
+
+[dependencies]
+esp-idf-hal = { version = "0.38.0", features = ["experimental"] }
+esp-idf-svc = { version = "0.42.1", features = ["experimental", "isr-async-executor"] }
+esp-idf-sys = { version = "0.31.6", features = ["binstart"] }
+embedded-svc = { version = "0.22.1", features = ["experimental"] }
+heapless = { version = "0.7.16", features = ["cas"] }
+futures = { version = "0.3.21", features = ["async-await"] }
+
+thiserror = "1.0.32"
+log = "0.4.17"
+palette = { version = "0.6.1", default-features = false, features = ["std"] }
+num-traits = { version = "0.2.15", features = ["i128"] }
+spin = { version = "0.9.4", features = ["rwlock"] }
+
+
+[build-dependencies]
+embuild = "0.30"
+anyhow = "1"
