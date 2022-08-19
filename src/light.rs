@@ -49,6 +49,7 @@ pub fn start(
     std::thread::spawn(move || {
         let task = run(ws2811, receiver, timer);
         pin_mut!(task);
+
         EXECUTOR.run::<2>(&mut [&mut task]);
 
         log::info!("light service shut down");
@@ -78,21 +79,18 @@ async fn run<P: OutputPin>(
 
         ws2811.show(std::iter::once(color_group)).unwrap();
 
-        let sleep = timer.after(MicroSecondsU64(16000)).unwrap();
-        sleep.await;
+        let sleep = timer.after(16.ms().into()).unwrap();
 
-        // let msg = select! {
-        //     () = sleep => continue,
-        //     msg = msg_recv.next() => match msg {
-        //         None => {
-        //             panic!("got None");
-        //             SHOULD_QUIT.store(true, Ordering::Relaxed);
-        //             break;
-        //         },
-        //         Some(msg) => msg
-        //     }
-        // };
+        let msg = select! {
+            () = sleep.fuse() => continue,
+            msg = msg_recv.next() => match msg {
+                None => {
+                    break;
+                },
+                Some(msg) => msg
+            }
+        };
 
-        // match msg {}
+        match msg {}
     }
 }

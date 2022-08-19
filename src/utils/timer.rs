@@ -54,9 +54,6 @@ impl EspTimer {
 
         Ok(futures::future::poll_fn(move |ctx| {
             if let None = &self.waker {
-                unsafe {
-                    sys::esp_rom_printf(b"s\0" as *const _ as *const i8);
-                }
                 self.waker = Some(ctx.waker().clone());
                 unsafe {
                     esp_nofail!(sys::esp_timer_start_once(
@@ -67,10 +64,7 @@ impl EspTimer {
 
                 core::task::Poll::Pending
             } else {
-                unsafe {
-                    sys::esp_rom_printf(b".\0" as *const _ as *const i8);
-                }
-                self.waker.take();
+                self.waker = None;
                 core::task::Poll::Ready(())
             }
         }))
@@ -78,13 +72,9 @@ impl EspTimer {
 
     extern "C" fn handle_callback(arg: *mut c_void) {
         let this = unsafe { &mut *(arg as *mut EspTimer) };
-        unsafe {
-            sys::esp_rom_printf(b"W\0" as *const _ as *const i8);
-        }
         if let Some(waker) = &this.waker {
             waker.wake_by_ref();
         }
-
 
         #[cfg(esp_idf_esp_timer_supports_isr_dispatch_method)]
         unsafe {

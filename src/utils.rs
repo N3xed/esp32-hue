@@ -51,7 +51,14 @@ pub fn set_panic_hook() {
         for frame in backtrace::Backtrace::new().take(100) {
             println!("{} ", frame);
         }
-        
+
         loop {}
     }))
+}
+
+pub fn dbg_log_char(c: u8) {
+    let arr = [c, 0];
+    unsafe {
+        esp_idf_sys::esp_rom_printf(arr.as_ptr() as *const i8);
+    }
 }
